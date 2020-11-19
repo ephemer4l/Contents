@@ -18,21 +18,9 @@ This way the compromise of the domain you use to connect to your remote server d
 
 
 ## Prepare Your System
-0. (Optional) Take a system snapshot before you start tuning your system or do any major installations. 
-To perform a Qubes OS backup please read and follow this guide in the [User Documentation][CreateBackup].
 
 1. Make sure the TemplateVMs that you plan to base your AppVMs on are [up to date][update].
 
-   For Fedora templates:<br/>
-   ```
-   [user@fedora-32 ~]$ sudo dnf update && sudo dnf upgrade -y
-   ```
-   
-   For Debian templates:<br/>
-   ```
-   user@debian-10:~$ sudo apt-get update && sudo apt-get upgrade
-   ```
-   
 2. If you *don't* plan to use KeePassXC, install `ssh-askpass` in the TemplateVM you plan to base your vault VM on.
 
    For Fedora templates:<br/>
@@ -60,82 +48,123 @@ Skip the first step if you don't wish to create another vault.
 
 ## Setting up SSH
 
-Perform the next steps in a vault VM terminal.
+Perform the next steps in `vault`.
 
 1. Generate an SSH key pair. Skip this step if you already have your keys.
 
-      ```shell_prompt
-      [user@vault ~]$ ssh-keygen -t ed25519 -a 500
-      Generating public/private ed25519 key pair.
-      Enter file in which to save the key (/home/user/.ssh/id_ed25519): 
-      Created directory '/home/user/.ssh'.
-      Enter passphrase (empty for no passphrase): 
-      Enter same passphrase again: 
-      Your identification has been saved in /home/user/.ssh/id_ed25519
-      Your public key has been saved in /home/user/.ssh/id_ed25519.pub
-      The key fingerprint is:
-      SHA256:DBxSxZcp16d1NSVSid3m8HRipUDM2INghQ4Sx3jPEDo user@vault
-      The key's randomart image is:
-      +--[ED25519 256]--+
-      |    o==+++.@++o=*|
-      |    o==o+ B BoOoB|
-      |    Eoo* +   *.O.|
-      |     . o+   .   o|
-      |        S        |
-      |                 |
-      |                 |
-      |                 |
-      |                 |
-      +----[SHA256]-----+
-    ```
-    **-t**: type<br/>
-    **-a**: num_trials<br/>
+   ```shell_prompt
+   [user@vault ~]$ ssh-keygen -t ed25519 -a 500
+   Generating public/private ed25519 key pair.
+   Enter file in which to save the key (/home/user/.ssh/id_ed25519): 
+   Created directory '/home/user/.ssh'.
+   Enter passphrase (empty for no passphrase): 
+   Enter same passphrase again: 
+   Your identification has been saved in /home/user/.ssh/id_ed25519
+   Your public key has been saved in /home/user/.ssh/id_ed25519.pub
+   The key fingerprint is:
+   SHA256:DBxSxZcp16d1NSVSid3m8HRipUDM2INghQ4Sx3jPEDo user@vault
+   The key's randomart image is:
+   +--[ED25519 256]--+
+   |    o==+++.@++o=*|
+   |    o==o+ B BoOoB|
+   |    Eoo* +   *.O.|
+   |     . o+   .   o|
+   |        S        |
+   |                 |
+   |                 |
+   |                 |
+   |                 |
+   +----[SHA256]-----+
+   ```
+   **-t**: type<br/>
+   **-a**: num_trials<br/>
     
-    Please note that the key fingerprint and the randomart image will differ.
+   Please note that the key fingerprint and the randomart image will differ.
     
-    For more information about `ssh-keygen`, run `man ssh-keygen`.
+   For more information about `ssh-keygen`, run `man ssh-keygen`.
     
 **Notice:** Skip the following steps if you plan on using KeePassXC.  
 
 2. Make a new directory `~/.config/autostart`
 
-      ```shell_prompt
-      [user@fedora-32 ~]$ mkdir -p ~/.config/autostart
-      ```
+   ```shell_prompt
+   [user@fedora-32 ~]$ mkdir -p ~/.config/autostart
+   ```
       
 3. Create the file `ssh-add.desktop` in `~/.config/autostart`
 
-   - Open the file with e.g. `nano`
+   - Open the file with e.g. `gedit`
 
-        ```shell_prompt
-        [user@fedora-32 ~]$ nano ~/.config/autostart/ssh-add.desktop
-        ```
+      ```shell_prompt
+      [user@fedora-32 ~]$ gedit ~/.config/autostart/ssh-add.desktop
+      ```
 
    - Paste the following contents:
 
-        ```shell_prompt
-        [Desktop Entry]
-        Name=ssh-add
-        Exec=ssh-add
-        Type=Application
-        ```
+      ```shell_prompt
+      [Desktop Entry]
+      Name=ssh-add
+      Exec=ssh-add
+      Type=Application
+      ```
    **Note:** If you've specified a custom name for your key using *-f*, you should adjust `Exec=ssh-add` to `Exec=ssh-add <path-to-your-key-file>`.
   
    - Save and exit.
 
-With this configuration you'll be prompted for a password the first time you start your vault VM to  be able to make use of your SSH key. 
+   With this configuration you'll be prompted for entering your password (if you have set a password) the first time you start your vault VM so you can make use of your SSH key. 
 
 ## Setting Up VM Interconnection
 
-### In the TemplateVM to your vault VM:
+### In `dom0`:
 
-1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`
+1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`.
 
-   - Open the file with e.g. `nano`
+   - Open the file with e.g. `nano`.
 
-     ```shell_prompt
-     [user@fedora-32 ~]$ sudo nano /etc/qubes-rpc/qubes.SshAgent
-     ```
+      ```shell_prompt
+      [user@fedora-32 ~]$ sudo nano /etc/qubes-rpc/qubes.SshAgent
+      ```
+
+   - If you want to explicitly allow only this connection, add the following line:
+
+      ```shell_prompt
+      ssh-client vault ask
+      ```
+
+   - If you want to allow all VMs to connect, add the following line:
+
+      ```shell_prompt
+      @anyvm @anyvm ask
+      ```
+
+   - If you want the input field to be "prefilled" by your `vault` VM, append `default_target=vault` so it looks like for example:
+
+      ```shell_prompt
+      @anyvm @anyvm ask,default_target=vault
+      ```
+
+   - Save and exit.
+   
+   **Note:** There are many ways to fine-tune this policy. For more details see the [Qubes qrexec documentation][PolicyFilesQubesOS]. 
+
+2. Close the terminal. **Do not shutdown `dom0`.**
+
+
+### In the AppVM `vault`:
+
+1. Make a new directory `/etc/usrlocal/qubes-rpc`.
+
+   ```shell_prompt
+   [user@fedora-32 ~]$ sudo mkdir /etc/usrlocal/qubes-rpc
+   ```
+
+2. Create the file `qubes.SshAgent` in `/etc/usrlocal/qubes-rpc`.
+
+   - Open the file with e.g. `gedit`
+
+      ```shell_prompt
+      [user@fedora-32 ~]$ sudo gedit /etc/usrlocal/qubes-rpc/qubes.SshAgent
+      ```
 
    - Paste the following contents:
 
@@ -152,54 +181,18 @@ With this configuration you'll be prompted for a password the first time you sta
 
    - Save and exit.
 
-2. Shutdown the template VM.
-
-### In `dom0`:
-
-1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`
-
-   - Open the file with your editor of choice (e.g. `nano`).
-
-     ```shell_prompt
-     [user@fedora-32 ~]$ sudo nano /etc/qubes-rpc/qubes.SshAgent
-     ```
-
-   - If you want to explicitly allow only this connection, add the following line:
-
-     ```shell_prompt
-     ssh-client vault ask
-     ```
-
-   - If you want to allow all VMs to connect, add the following line:
-
-     ```shell_prompt
-     @anyvm @anyvm ask
-     ```
-
-   - If you want the input field to be "prefilled" by your `vault` VM, append `default_target=vault` so it looks like for example:
-
-     ```shell_prompt
-     @anyvm @anyvm ask,default_target=vault
-     ```
-
-   - Save and exit.
-   
-   **Note:** There are many ways to fine-tune this policy. For more details see the [Qubes qrexec documentation][PolicyFilesQubesOS]. 
-
-2. Close the terminal. **Do not shutdown `dom0`.**
-
-### In an SSH Client AppVM terminal
+### In the AppVM `ssh-client`
 
 Theoretically, you can use any AppVM but to increase security it is advised to create a dedicated AppVM for your SSH connections.
 Furthermore, you can set different firewall rules for each VM (i.e. for intranet and internet connections) which also provides additional protection.
 
 1. Edit `/rw/config/rc.local`
 
-   - Open the file with your editor of choice (e.g. `nano`).
+   - Open the file with your editor of choice (e.g. `gedit`).
 
-     ```shell_prompt
-     [user@ssh-client ~]$ sudo nano /rw/config/rc.local
-     ```
+      ```shell_prompt
+      [user@ssh-client ~]$ sudo gedit /rw/config/rc.local
+      ```
 
    - Add the following to the bottom of the file:
 
@@ -220,10 +213,10 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 2. Edit `~/.bashrc`
 
-   - Open the file with your editor of choice (e.g. `nano`).
+   - Open the file with your editor of choice (e.g. `gedit`).
 
      ```shell_prompt
-     [user@ssh-client ~]$ nano ~/.bashrc
+     [user@ssh-client ~]$ gedit ~/.bashrc
      ```
 
    - Add the following to the bottom of the file:
@@ -245,19 +238,8 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 **Warning:** This part is for setting up *KeePassXC*, not KeePassX or KeePass. See the [KeePassXC FAQ][KeePassXC FAQ].
 
-0. KeePassXC should be installed by default in both Fedora and Debian TemplateVMs. 
-If this changes in the future and you find that it isn't, it can be installed with:
-   
-   For Fedora templates:<br/>
-   ```shell_prompt
-   [user@fedora-32 ~]$ sudo dnf install keepassxc
-   ```
-   For Debian templates:<br/>
-   ```shell_prompt
-   user@vault-deb:~$ sudo apt-get install keepassxc
-   ```
-   
-   If you have another template check the [KeePassXC download page][KeePassXC download page] for instructions.
+0. KeePassXC should be installed by default in both Fedora and Debian templates. 
+If you have another template check the [KeePassXC download page][KeePassXC download page] for instructions.
 
 1. Add KeepasXC to the Applications menu of the newly created AppVM for ease of access.
 
@@ -314,17 +296,17 @@ Check the [KeePassXC User Guide][KeePassXC User Guide] for more information abou
 
 1. Close your KeePassXC database and run `ssh-add -L`. It should return `The agent has no identities.`
 
-    ```shell_prompt
-    [user@vault ~]$ ssh-add -L
-    The agent has no identities.
-    ```
+   ```shell_prompt
+   [user@vault ~]$ ssh-add -L
+   The agent has no identities.
+   ```
 
 2. Unlock your KeePassXC database and run `ssh-add -L` again. This time it should return your public key.
 
-    ```shell_prompt
-    [user@vault ~]$ ssh-add -L
-    ssh-ed25519 <public key string> user@vault-keepassxc
-    ```
+   ```shell_prompt
+   [user@vault ~]$ ssh-add -L
+   ssh-ed25519 <public key string> user@vault-keepassxc
+   ```
 
 ## Test Your Configuration
 
@@ -334,9 +316,9 @@ If it is, restart your vault VM and do not enter your password when it asks you 
 
 2. Try fetching your identities on the SSH Client VM. 
 
-    ```shell_prompt
-    [user@ssh-client ~]$ ssh-add -L
-    ```
+   ```shell_prompt
+   [user@ssh-client ~]$ ssh-add -L
+   ```
 
 3. Allow operation execution. (If you don't see the below prompt, check your VM interconnection setup.)
 
@@ -364,7 +346,7 @@ If you're getting an error (e.g. `error fetching identities: communication with 
 
 ## (Optional) Backing Up the Configuration
 - Start a system backup as per the [User Documentation][CreateBackup].
-- Back up your \*.kdbx file to a somewhere you *know* to be secure. (e.g. a secure USB device, an end-to-end-encrypted email box. (e.g. Tutanota, ProtonMail))
+- Back up your \*.kdbx file to a somewhere you *know* to be secure. (e.g. a secure USB device or an end-to-end-encrypted email box)
 
 ## Security Benefits
 
@@ -379,16 +361,16 @@ In order to gain access to the vault VM, the attacker would require the use of, 
 
 ### Regarding Your KeePassXC Database File
 Although the database file is encrpyted with your password, if you haven't taken any protective measures, it can be bruteforced. 
-Some tips for securing your keys against a `vault` VM compromise include: 
+Some tips for securing your keys against a `vault` compromise include: 
 * Hide the \*.kdbx file by simply renaming the file extension (e.g. \*.zip). Keep in mind this is not likely to stop dedicated adversaries from finding your \*.kdbx file. 
-* Add a second encryption layer (e.g. with VeraCrypt, \*.7z with password).
+* Add a second encryption layer (e.g. with VeraCrypt, \*.7z with password). Keep in mind that the adversary can just wait for you to decrypt your file and steal it then.
 * Adjust the encrpytion settings in KeePassXC as per the [KeePassXC documentation][KeePassXC User Guide].
 
 ## Current limitations
 
 * It is possible for a malicious VM to hold onto an ssh-agent connection for more than one use. 
 Therefore, if you authorize usage once, assume that a malicious VM could then use it many more times. 
-In this case, though, the SSH Agent should continue to protect your private keys; only usage of it would be available to the malicious VM until it was shut down.
+In this case, though, the SSH Agent will continue to protect your private keys; only usage of it would be available to the malicious VM until it was shut down.
 
 * It doesn’t solve the problem of allowing the user to know what is requested before the operation gets approved.
 
