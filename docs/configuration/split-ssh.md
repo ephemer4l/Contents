@@ -147,8 +147,6 @@ Perform the next steps in `vault`.
    
    **Note:** There are many ways to fine-tune this policy. For more details see the [Qubes qrexec documentation][PolicyFilesQubesOS]. 
 
-2. Close the terminal. **Do not shutdown `dom0`.**
-
 
 ### In the AppVM `vault`:
 
