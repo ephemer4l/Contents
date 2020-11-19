@@ -6,11 +6,11 @@ This is done by using Qubes's [qrexec][qrexec] framework to connect a local SSH 
 This way the compromise of the domain you use to connect to your remote server does not allow the attacker to automatically also steal all your keys. 
 (We should make a rather obvious comment here that the so-often-used passphrases on private keys are pretty meaningless because the attacker can easily set up a simple backdoor which would wait until the user enters the passphrase and steal the key then.)
 
-   ![diagram](https://raw.githubusercontent.com/santorihelix/qubes-splitssh-diagram/5498bd02db903bf5eedcafa2a952452d77dda6a8/split-ssh3.svg)
+   ![diagram](https://raw.githubusercontent.com/santorihelix/qubes-splitssh-diagram/05244ab8bc74a136e6826d2927089e47cc58f0f1/split-ssh4.svg)
 
 ## Overview
 
-1. Make sure the TemplateVM you plan to use is up to date and `nmap` and `ncat` is installed.
+1. Make sure the TemplateVM you plan to use is up to date and install `ssh-askpass`.
 2. Create `vault` and `ssh-client` AppVMs.
 3. Create an ssh key in your `vault` AppVM and set up automatic key adding prompt.
 4. Set up VM interconnection
@@ -33,19 +33,7 @@ To perform a Qubes OS backup please read and follow this guide in the [User Docu
    user@debian-10:~$ sudo apt-get update && sudo apt-get upgrade
    ```
    
-2. Make sure `ncat` is installed in the TemplateVMs you plan to base your AppVMs on.
-
-   For Fedora templates:<br/>
-   ```
-   [user@fedora-32 ~]$ sudo dnf install nmap-ncat
-   ```
-
-   For Debian templates:<br/>
-   ```
-   user@debian-10:~$ sudo apt-get install nmap ncat
-   ```
-   
-3. If you *don't* plan to use KeePassXC, install `ssh-askpass` in the TemplateVM you plan to base your vault VM on.
+2. If you *don't* plan to use KeePassXC, install `ssh-askpass` in the TemplateVM you plan to base your vault VM on.
 
    For Fedora templates:<br/>
    ```
@@ -215,18 +203,18 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
    - Add the following to the bottom of the file:
 
-     ```shell_prompt
-     # SPLIT SSH CONFIGURATION >>>
-     # replace "vault" with your AppVM name which stores the ssh private key(s)
-     SSH_VAULT_VM="vault"
-     
-     if [ "$SSH_VAULT_VM" != "" ]; then
-       export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
-       rm -f "$SSH_SOCK"
-       sudo -u user /bin/sh -c "umask 177 && ncat -k -l -U '$SSH_SOCK' -c 'qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent' &"
-     fi
-     # <<< SPLIT SSH CONFIGURATION
-     ```
+      ```shell_prompt
+      # SPLIT SSH CONFIGURATION >>>
+      # replace "vault" with your AppVM name which stores the ssh private key(s)
+      SSH_VAULT_VM="vault"
+
+      if [ "$SSH_VAULT_VM" != "" ]; then
+        export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
+        rm -f "$SSH_SOCK"
+        sudo -u user /bin/sh -c "umask 177 && exec socat -T 5 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" &
+      fi
+      # <<< SPLIT SSH CONFIGURATION
+      ```
 
    - Save and exit.
 
@@ -352,7 +340,7 @@ If it is, restart your vault VM and do not enter your password when it asks you 
 
 3. Allow operation execution. (If you don't see the below prompt, check your VM interconnection setup.)
 
-    ![operation execution](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/original/1X/adcd0c408226c24950d2c876a38d2fecad8aacea.png)
+    ![operation execution](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/original/1X/37e62ebb62482d83d878e3481161c72f22ec801c.png)
 
 It should return `The agent has no identities.`. 
 
@@ -368,7 +356,7 @@ If you're getting an error (e.g. `error fetching identities: communication with 
 
 6. Allow operation execution.  (If you don't see the below prompt, check your VM interconnection setup.)
 
-   ![operation execution](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/original/1X/adcd0c408226c24950d2c876a38d2fecad8aacea.png)
+   ![operation execution](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/original/1X/37e62ebb62482d83d878e3481161c72f22ec801c.png)
 
 Check if it returns `ssh-ed25519 <public key string>`
 
