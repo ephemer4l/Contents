@@ -238,7 +238,7 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 **Warning:** This part is for setting up *KeePassXC*, not KeePassX or KeePass. See the [KeePassXC FAQ][KeePassXC FAQ].
 
-0. KeePassXC should be installed by default in both Fedora and Debian templates. 
+KeePassXC should be installed by default in both Fedora and Debian templates. 
 If you have another template check the [KeePassXC download page][KeePassXC download page] for instructions.
 
 1. Add KeepasXC to the Applications menu of the newly created AppVM for ease of access.
