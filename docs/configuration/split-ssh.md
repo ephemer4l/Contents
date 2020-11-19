@@ -361,7 +361,6 @@ In order to gain access to the vault VM, the attacker would require the use of, 
 Although the database file is encrpyted with your password, if you haven't taken any protective measures, it can be bruteforced. 
 Some tips for securing your keys against a `vault` compromise include: 
 * Hide the \*.kdbx file by simply renaming the file extension (e.g. \*.zip). Keep in mind this is not likely to stop dedicated adversaries from finding your \*.kdbx file. 
-* Add a second encryption layer (e.g. with VeraCrypt, \*.7z with password). Keep in mind that the adversary can just wait for you to decrypt your file and steal it then.
 * Adjust the encrpytion settings in KeePassXC as per the [KeePassXC documentation][KeePassXC User Guide].
 
 ## Current limitations
