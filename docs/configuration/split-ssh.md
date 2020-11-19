@@ -147,7 +147,7 @@ With this configuration you'll be prompted for a password the first time you sta
      notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
      
      # SSH connection
-     ncat -U $SSH_AUTH_SOCK
+     socat - UNIX-CONNECT:$SSH_AUTH_SOCK
      ```
 
    - Save and exit.
