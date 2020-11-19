@@ -48,7 +48,7 @@ Skip the first step if you don't wish to create another vault.
 
 ## Setting up SSH
 
-Perform the next steps in `vault`.
+Perform the next steps in the AppVM `vault`.
 
 1. Generate an SSH key pair. Skip this step if you already have your keys.
 
