@@ -211,7 +211,7 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
       if [ "$SSH_VAULT_VM" != "" ]; then
         export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
         rm -f "$SSH_SOCK"
-        sudo -u user /bin/sh -c "umask 177 && exec socat -T 5 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" &
+        sudo -u user /bin/sh -c "umask 177 && exec socat 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" &
       fi
       # <<< SPLIT SSH CONFIGURATION
       ```
