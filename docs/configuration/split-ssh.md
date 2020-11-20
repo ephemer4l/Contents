@@ -369,7 +369,6 @@ Some tips for securing your keys against a `vault` compromise include:
 * It is possible for a malicious VM to hold onto an ssh-agent connection for more than one use. 
 Therefore, if you authorize usage once, assume that a malicious VM could then use it many more times. 
 In this case, though, the SSH Agent will continue to protect your private keys; only usage of it would be available to the malicious VM until it was shut down.
-
 * It doesn’t solve the problem of allowing the user to know what is requested before the operation gets approved.
 
 Want more Qubes split magic?
