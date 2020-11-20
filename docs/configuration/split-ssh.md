@@ -40,7 +40,7 @@ Perform the next steps in the AppVM `vault`.
 1. Generate an SSH key pair. 
 Skip this step if you already have your keys. 
 Note that it is *okay* to not enter a password for your private keys since the `vault` AppVM has no networking.
-If you still want to encrpt your keys refer to the section titled "Securing Your Private Key."
+If you still want to encrpt your keys refer to the [Securing Your Private Key][#secure-key] section.
 
    ```shell_prompt
    [user@vault ~]$ ssh-keygen -t ed25519 -a 500
@@ -205,7 +205,7 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
       ```
 
 ## Securing Your Private Key
-
+<a name="secure-key"><a/>
 Too tired to write this now lol.
 Follow either one (but not both) of the configurations described below.
 
