@@ -163,10 +163,10 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 1. Edit `/rw/config/rc.local`.
 
-   - Open the file with your editor of choice (e.g. `nano`).
+   - Open the file with e.g. `gedit`.
 
      ```shell_prompt
-     [user@ssh-client ~]$ sudo nano /rw/config/rc.local
+     [user@ssh-client ~]$ sudo gedit /rw/config/rc.local
      ```
    - Add the following to the bottom of the file:
 
@@ -185,10 +185,10 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 2. Edit `~/.bashrc` and add the following to the bottom of the file:
 
-   - Open the file with your editor of choice (e.g. `nano`).
+   - Open the file with e.g. `gedit`
 
      ```shell_prompt
-     [user@ssh-client ~]$ nano ~/.bashrc
+     [user@ssh-client ~]$ gedit ~/.bashrc
      ```
 
    - Add the following to the bottom of the file:
