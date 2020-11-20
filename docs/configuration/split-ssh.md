@@ -6,7 +6,7 @@ This is done by using Qubes's [qrexec][qrexec] framework to connect a local SSH 
 This way the compromise of the domain you use to connect to your remote server does not allow the attacker to automatically also steal all your keys. 
 (We should make a rather obvious comment here that the so-often-used passphrases on private keys are pretty meaningless because the attacker can easily set up a simple backdoor which would wait until the user enters the passphrase and steal the key then.)
 
-   ![diagram](https://raw.githubusercontent.com/santorihelix/qubes-splitssh-diagram/05244ab8bc74a136e6826d2927089e47cc58f0f1/split-ssh4.svg)
+   ![diagram](https://raw.githubusercontent.com/santorihelix/qubes-splitssh-diagram/05244ab8bc74a136e6826d2927089e47cc58f0f1/split-ssh5.svg)
 
 ## Overview
 
