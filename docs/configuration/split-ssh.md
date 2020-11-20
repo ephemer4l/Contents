@@ -234,7 +234,8 @@ Note that the location and name of your private key may differ.
    ```
    user@debian-10:~$ sudo apt-get install ssh-askpass
    ```
-   
+3. Shutdown the template and restart your `vault` VM.
+
 With this configuration you'll be prompted for entering your password every time you start your vault VM to be able to make use of your SSH key. 
 
 ### Using [KeePassXC][KeePassXC]
@@ -247,7 +248,7 @@ KeePassXC should be installed by default in both Fedora and Debian TemplateVMs. 
 
    ![vault adding keepass](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/optimized/1X/e20e988e356ea63feda6760dca6a88fcd2a650c6_2_602x500.png)
 
-**Note:** Since the vault VM has no internet connection, you can safely deny automatic updates.
+   **Note:** Since the vault VM has no internet connection, you can safely deny automatic updates.
 
 2. Create a new database.
 
