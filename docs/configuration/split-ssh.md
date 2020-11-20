@@ -244,11 +244,11 @@ With this configuration you'll be prompted for entering your password every time
 
 KeePassXC should be installed by default in both Fedora and Debian TemplateVMs. If it’s not or you're using another template, you can [install it manually](https://www.qubes-os.org/doc/software-update-domu/#installing-software-in-templatevms).
 
-1. Add KeepasXC to the Applications menu of the newly created AppVM for ease of access.
+1. Add KeepasXC to the Applications menu of the newly created AppVM for ease of access and launch it.
 
    ![vault adding keepass](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/optimized/1X/e20e988e356ea63feda6760dca6a88fcd2a650c6_2_602x500.png)
 
-   **Note:** Since the vault VM has no internet connection, you can safely deny automatic updates.
+   **Note:** Since the vault VM has no internet connection, you can safely deny automatic updates if prompted.
 
 2. Create a new database.
 
