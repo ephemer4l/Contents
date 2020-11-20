@@ -148,20 +148,14 @@ Perform the next steps in the AppVM `vault`.
    **Note:** There are many ways to fine-tune this policy. For more details see the [Qubes qrexec documentation][PolicyFilesQubesOS]. 
 
 
-### In the AppVM `vault`:
+### In the Template of Your AppVM `vault`:
 
-1. Make a new directory `/etc/usrlocal/qubes-rpc`.
-
-   ```shell_prompt
-   [user@fedora-32 ~]$ sudo mkdir /etc/usrlocal/qubes-rpc
-   ```
-
-2. Create the file `qubes.SshAgent` in `/etc/usrlocal/qubes-rpc`.
+1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`.
 
    - Open the file with e.g. `gedit`
 
       ```shell_prompt
-      [user@fedora-32 ~]$ sudo gedit /etc/usrlocal/qubes-rpc/qubes.SshAgent
+      [user@fedora-32 ~]$ sudo gedit /etc/qubes-rpc/qubes.SshAgent
       ```
 
    - Paste the following contents:
@@ -184,7 +178,7 @@ Perform the next steps in the AppVM `vault`.
 Theoretically, you can use any AppVM but to increase security it is advised to create a dedicated AppVM for your SSH connections.
 Furthermore, you can set different firewall rules for each VM (i.e. for intranet and internet connections) which also provides additional protection.
 
-1. Edit `/rw/config/rc.local`
+1. Edit `/rw/config/rc.local`.
 
    - Open the file with your editor of choice (e.g. `gedit`).
 
@@ -236,8 +230,7 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 **Warning:** This part is for setting up *KeePassXC*, not KeePassX or KeePass. See the [KeePassXC FAQ][KeePassXC FAQ].
 
-KeePassXC should be installed by default in both Fedora and Debian templates. 
-If you have another template check the [KeePassXC download page][KeePassXC download page] for instructions.
+KeePassXC should be installed by default in both Fedora and Debian TemplateVMs. If it’s not or you're using another template, you can [install it manually](https://www.qubes-os.org/doc/software-update-domu/#installing-software-in-templatevms).
 
 1. Add KeepasXC to the Applications menu of the newly created AppVM for ease of access.
 
@@ -274,7 +267,7 @@ Check the [KeePassXC User Guide][KeePassXC User Guide] for more information abou
 
    ![adding keys](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/original/1X/ff4a1197826ee69740251dbf8204d90b6cf4c6c8.png)
 
-   **Note:** You only need to add the private key (`id_25519` here) but if you want to be able to simply back up both your private and public key (id_25519.pub) by backing up your KeePassXC database (\*.kdbx file) you can add that too.
+   **Note:** Technically, you only need to add the private key (id_25519) for the following steps to work. If you add the public key here, too, you can later on backup your kdbx file and have everything in one place. You can even delete your keys (`id_25519` and `id_25519.pub`) from your file system if you like.
 
 9. Enable "SSH Agent Integration" within the Application Settings.
 
@@ -341,10 +334,6 @@ If you're getting an error (e.g. `error fetching identities: communication with 
 Check if it returns `ssh-ed25519 <public key string>`
 
 If you're getting an error (e.g. `error fetching identities: communication with agent failed`), make sure your vault VM is running and check your VM interconnection setup.
-
-## (Optional) Backing Up the Configuration
-- Start a system backup as per the [User Documentation][CreateBackup].
-- Back up your \*.kdbx file to a somewhere you *know* to be secure. (e.g. a secure USB device or an end-to-end-encrypted email box)
 
 ## Security Benefits
 
