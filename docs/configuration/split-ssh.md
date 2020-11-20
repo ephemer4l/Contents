@@ -206,7 +206,7 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 ## Securing Your Private Key
 
-<Too tired to write this now lol.> 
+Too tired to write this now lol.
 Follow either one (but not both) of the configurations described below.
 
 ### Using the Built-in Password Utility and `ssh-askpass`
