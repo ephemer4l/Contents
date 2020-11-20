@@ -16,6 +16,10 @@ This way the compromise of the domain you use to connect to your remote server d
 4. Set up VM interconnection
 5. (Strongly Encouraged) Create a KeePassXC Database and set up SSH Agent Integration in KeePassXC.
 
+## Preparing your system
+
+- Make sure the templates you plan to base your AppVMs on are [up-to-date][update].
+
 ## [Creating AppVMs][appvm create]
 
 If you’ve installed Qubes OS using the default options, a few qubes including a vault AppVM has been created for you. 
