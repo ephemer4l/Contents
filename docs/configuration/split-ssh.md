@@ -16,23 +16,6 @@ This way the compromise of the domain you use to connect to your remote server d
 4. Set up VM interconnection
 5. (Strongly Encouraged) Create a KeePassXC Database and set up SSH Agent Integration in KeePassXC.
 
-
-## Prepare Your System
-
-1. Make sure the TemplateVMs that you plan to base your AppVMs on are [up to date][update].
-
-2. If you *don't* plan to use KeePassXC, install `ssh-askpass` in the TemplateVM you plan to base your vault VM on.
-
-   For Fedora templates:<br/>
-   ```
-   [user@fedora-32 ~]$ sudo dnf install openssh-askpass
-   ```
-
-   For Debian templates:<br/>
-   ```
-   user@debian-10:~$ sudo apt-get install ssh-askpass
-   ```
-
 ## [Creating AppVMs][appvm create]
 
 If you’ve installed Qubes OS using the default options, a few qubes including a vault AppVM has been created for you. 
@@ -50,7 +33,10 @@ Skip the first step if you don't wish to create another vault.
 
 Perform the next steps in the AppVM `vault`.
 
-1. Generate an SSH key pair. Skip this step if you already have your keys.
+1. Generate an SSH key pair. 
+Skip this step if you already have your keys. 
+Note that it is *okay* to not enter a password for your private keys since the `vault` AppVM has no networking.
+If you still want to encrpt your keys refer to the section titled "Securing Your Private Key."
 
    ```shell_prompt
    [user@vault ~]$ ssh-keygen -t ed25519 -a 500
@@ -91,39 +77,21 @@ Perform the next steps in the AppVM `vault`.
    [user@fedora-32 ~]$ mkdir -p ~/.config/autostart
    ```
       
-3. Create the file `ssh-add.desktop` in `~/.config/autostart`
+3. Create the file `ssh-add.desktop` in `~/.config/autostart` and paste the following contents:
 
-   - Open the file with e.g. `gedit`
-
-      ```shell_prompt
-      [user@fedora-32 ~]$ gedit ~/.config/autostart/ssh-add.desktop
-      ```
-
-   - Paste the following contents:
-
-      ```shell_prompt
-      [Desktop Entry]
-      Name=ssh-add
-      Exec=ssh-add
-      Type=Application
-      ```
+   ```shell_prompt
+   [Desktop Entry]
+   Name=ssh-add
+   Exec=ssh-add
+   Type=Application
+   ```
    **Note:** If you've specified a custom name for your key using *-f*, you should adjust `Exec=ssh-add` to `Exec=ssh-add <path-to-your-key-file>`.
-  
-   - Save and exit.
-
-   With this configuration you'll be prompted for entering your password (if you have set a password) the first time you start your vault VM so you can make use of your SSH key. 
 
 ## Setting Up VM Interconnection
 
 ### In `dom0`:
 
 1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`.
-
-   - Open the file with e.g. `nano`.
-
-      ```shell_prompt
-      [user@fedora-32 ~]$ sudo nano /etc/qubes-rpc/qubes.SshAgent
-      ```
 
    - If you want to explicitly allow only this connection, add the following line:
 
@@ -142,91 +110,92 @@ Perform the next steps in the AppVM `vault`.
       ```shell_prompt
       @anyvm @anyvm ask,default_target=vault
       ```
-
-   - Save and exit.
    
    **Note:** There are many ways to fine-tune this policy. For more details see the [Qubes qrexec documentation][PolicyFilesQubesOS]. 
 
 
 ### In the Template of Your AppVM `vault`:
 
-1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`.
+1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc` and paste the following contents:
 
-   - Open the file with e.g. `gedit`
-
-      ```shell_prompt
-      [user@fedora-32 ~]$ sudo gedit /etc/qubes-rpc/qubes.SshAgent
-      ```
-
-   - Paste the following contents:
-
-     ```shell_prompt
-     #!/bin/sh
-     # Qubes App Split SSH Script
+  ```shell_prompt
+  #!/bin/sh
+  # Qubes App Split SSH Script
      
-     # safeguard - Qubes notification bubble for each ssh request
-     notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
+  # safeguard - Qubes notification bubble for each ssh request
+  notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
      
-     # SSH connection
-     socat - UNIX-CONNECT:$SSH_AUTH_SOCK
-     ```
-
-   - Save and exit.
+  # SSH connection
+  socat - UNIX-CONNECT:$SSH_AUTH_SOCK
+  ```
 
 ### In the AppVM `ssh-client`
 
 Theoretically, you can use any AppVM but to increase security it is advised to create a dedicated AppVM for your SSH connections.
 Furthermore, you can set different firewall rules for each VM (i.e. for intranet and internet connections) which also provides additional protection.
 
-1. Edit `/rw/config/rc.local`.
+1. Edit `/rw/config/rc.local` and add the following to the bottom of the file:
 
-   - Open the file with your editor of choice (e.g. `gedit`).
+   ```shell_prompt
+   # SPLIT SSH CONFIGURATION >>>
+   # replace "vault" with your AppVM name which stores the ssh private key(s)
+   SSH_VAULT_VM="vault"
 
-      ```shell_prompt
-      [user@ssh-client ~]$ sudo gedit /rw/config/rc.local
-      ```
+   if [ "$SSH_VAULT_VM" != "" ]; then
+     export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
+     rm -f "$SSH_SOCK"
+     sudo -u user /bin/sh -c "umask 177 && exec socat 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" 
+   fi
+   # <<< SPLIT SSH CONFIGURATION
+   ```
 
-   - Add the following to the bottom of the file:
+2. Edit `~/.bashrc` and add the following to the bottom of the file:
 
-      ```shell_prompt
-      # SPLIT SSH CONFIGURATION >>>
-      # replace "vault" with your AppVM name which stores the ssh private key(s)
-      SSH_VAULT_VM="vault"
-
-      if [ "$SSH_VAULT_VM" != "" ]; then
-        export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
-        rm -f "$SSH_SOCK"
-        sudo -u user /bin/sh -c "umask 177 && exec socat 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" &
-      fi
-      # <<< SPLIT SSH CONFIGURATION
-      ```
-
-   - Save and exit.
-
-2. Edit `~/.bashrc`
-
-   - Open the file with your editor of choice (e.g. `gedit`).
-
-     ```shell_prompt
-     [user@ssh-client ~]$ gedit ~/.bashrc
-     ```
-
-   - Add the following to the bottom of the file:
-
-     ```shell_prompt
-     # SPLIT SSH CONFIGURATION >>>
-     # replace "vault" with your AppVM name which stores the ssh private key(s)
-     SSH_VAULT_VM="vault"
+  ```shell_prompt
+  # SPLIT SSH CONFIGURATION >>>
+  # replace "vault" with your AppVM name which stores the ssh private key(s)
+  SSH_VAULT_VM="vault"
      
-     if [ "$SSH_VAULT_VM" != "" ]; then
-         export SSH_AUTH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
-     fi
-     # <<< SPLIT SSH CONFIGURATION
-     ```
+  if [ "$SSH_VAULT_VM" != "" ]; then
+    export SSH_AUTH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
+  fi
+  # <<< SPLIT SSH CONFIGURATION
+  ```
 
-   - Save and exit.
+## Securing Your Private Key
 
-## Using [KeePassXC][KeePassXC]
+<Too tired to write this now lol.> 
+Follow either one (but not both) of the configurations described below.
+
+### Using the Built-in Password Utility and `ssh-askpass`
+
+1. Add a password to your private key with `ssh-keygen -p`. 
+Note that the location and name of your private key may differ.
+
+    ```
+    [user@vault ~]$ ssh-keygen -p 
+    Enter file in which the key is (/home/user/.ssh/id_rsa): /home/user/.ssh/id_ed25519
+    Key has comment 'user@vault'
+    Enter new passphrase (empty for no passphrase): 
+    Enter same passphrase again: 
+    Your identification has been saved with the new passphrase.
+    ```
+    
+2. Install `ssh-askpass` in the template of your `vault` VM.
+
+   For Fedora templates:<br/>
+   ```
+   [user@fedora-32 ~]$ sudo dnf install openssh-askpass
+   ```
+
+   For Debian templates:<br/>
+   ```
+   user@debian-10:~$ sudo apt-get install ssh-askpass
+   ```
+   
+With this configuration you'll be prompted for entering your password every time you start your vault VM to be able to make use of your SSH key. 
+
+### Using [KeePassXC][KeePassXC]
 
 **Warning:** This part is for setting up *KeePassXC*, not KeePassX or KeePass. See the [KeePassXC FAQ][KeePassXC FAQ].
 
@@ -283,7 +252,7 @@ Check the [KeePassXC User Guide][KeePassXC User Guide] for more information abou
 
    ![select private key](https://aws1.discourse-cdn.com/free1/uploads/qubes_os/optimized/1X/0d19ae6f3545a154823a8b3f8c89d52f6e0d6b68_2_594x500.png)
 
-### Testing the KeePassXC Setup
+#### Testing the KeePassXC Setup
 
 1. Close your KeePassXC database and run `ssh-add -L`. It should return `The agent has no identities.`
 
