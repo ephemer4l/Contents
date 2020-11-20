@@ -77,7 +77,7 @@ If you still want to encrpt your keys refer to the section titled "Securing Your
    [user@fedora-32 ~]$ mkdir -p ~/.config/autostart
    ```
       
-3. Create the file `ssh-add.desktop` in `~/.config/autostart` and paste the following contents:
+3. Create and edit `~/.config/autostart/ssh-add.desktop` and paste the following contents:
 
    ```shell_prompt
    [Desktop Entry]
@@ -91,7 +91,7 @@ If you still want to encrpt your keys refer to the section titled "Securing Your
 
 ### In `dom0`:
 
-1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc`.
+1. Create and edit `/etc/qubes-rpc/qubes.SshAgent`.
 
    - If you want to explicitly allow only this connection, add the following line:
 
@@ -116,18 +116,18 @@ If you still want to encrpt your keys refer to the section titled "Securing Your
 
 ### In the Template of Your AppVM `vault`:
 
-1. Create the file `qubes.SshAgent` in `/etc/qubes-rpc` and paste the following contents:
+1. Create and edit `/etc/qubes-rpc/qubes.SshAgent` and paste the following contents:
 
-  ```shell_prompt
-  #!/bin/sh
-  # Qubes App Split SSH Script
+   ```shell_prompt
+   #!/bin/sh
+   # Qubes App Split SSH Script
      
-  # safeguard - Qubes notification bubble for each ssh request
-  notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
+   # safeguard - Qubes notification bubble for each ssh request
+   notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
      
-  # SSH connection
-  socat - UNIX-CONNECT:$SSH_AUTH_SOCK
-  ```
+   # SSH connection
+   socat - UNIX-CONNECT:$SSH_AUTH_SOCK
+   ```
 
 ### In the AppVM `ssh-client`
 
@@ -151,16 +151,16 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 2. Edit `~/.bashrc` and add the following to the bottom of the file:
 
-  ```shell_prompt
-  # SPLIT SSH CONFIGURATION >>>
-  # replace "vault" with your AppVM name which stores the ssh private key(s)
-  SSH_VAULT_VM="vault"
+   ```shell_prompt
+   # SPLIT SSH CONFIGURATION >>>
+   # replace "vault" with your AppVM name which stores the ssh private key(s)
+   SSH_VAULT_VM="vault"
      
-  if [ "$SSH_VAULT_VM" != "" ]; then
-    export SSH_AUTH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
-  fi
-  # <<< SPLIT SSH CONFIGURATION
-  ```
+   if [ "$SSH_VAULT_VM" != "" ]; then
+     export SSH_AUTH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
+   fi
+   # <<< SPLIT SSH CONFIGURATION
+   ```
 
 ## Securing Your Private Key
 
@@ -172,14 +172,14 @@ Follow either one (but not both) of the configurations described below.
 1. Add a password to your private key with `ssh-keygen -p`. 
 Note that the location and name of your private key may differ.
 
-    ```
-    [user@vault ~]$ ssh-keygen -p 
-    Enter file in which the key is (/home/user/.ssh/id_rsa): /home/user/.ssh/id_ed25519
-    Key has comment 'user@vault'
-    Enter new passphrase (empty for no passphrase): 
-    Enter same passphrase again: 
-    Your identification has been saved with the new passphrase.
-    ```
+   ```
+   [user@vault ~]$ ssh-keygen -p 
+   Enter file in which the key is (/home/user/.ssh/id_rsa): /home/user/.ssh/id_ed25519
+   Key has comment 'user@vault'
+   Enter new passphrase (empty for no passphrase): 
+   Enter same passphrase again: 
+   Your identification has been saved with the new passphrase.
+   ```
     
 2. Install `ssh-askpass` in the template of your `vault` VM.
 
