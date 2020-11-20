@@ -81,14 +81,23 @@ If you still want to encrpt your keys refer to the section titled "Securing Your
    [user@fedora-32 ~]$ mkdir -p ~/.config/autostart
    ```
       
-3. Create and edit `~/.config/autostart/ssh-add.desktop` and paste the following contents:
+3. Create the file `~/.config/autostart/ssh-add.desktop`
 
-   ```shell_prompt
-   [Desktop Entry]
-   Name=ssh-add
-   Exec=ssh-add
-   Type=Application
-   ```
+   - Open the file with e.g. `gedit`
+
+        ```shell_prompt
+        [user@fedora-32 ~]$ gedit ~/.config/autostart/ssh-add.desktop
+        ```
+
+   - Paste the following contents:
+
+      ```shell_prompt
+      [Desktop Entry]
+      Name=ssh-add
+      Exec=ssh-add
+      Type=Application
+      ```
+        
    **Note:** If you've specified a custom name for your key using *-f*, you should adjust `Exec=ssh-add` to `Exec=ssh-add <path-to-your-key-file>`.
 
 ## Setting Up VM Interconnection
@@ -96,6 +105,12 @@ If you still want to encrpt your keys refer to the section titled "Securing Your
 ### In `dom0`:
 
 1. Create and edit `/etc/qubes-rpc/qubes.SshAgent`.
+
+   - Open the file with e.g. `nano`.
+
+     ```shell_prompt
+     [user@fedora-32 ~]$ sudo nano /etc/qubes-rpc/qubes.SshAgent
+     ```
 
    - If you want to explicitly allow only this connection, add the following line:
 
@@ -120,51 +135,74 @@ If you still want to encrpt your keys refer to the section titled "Securing Your
 
 ### In the Template of Your AppVM `vault`:
 
-1. Create and edit `/etc/qubes-rpc/qubes.SshAgent` and paste the following contents:
+1. Create and edit `/etc/qubes-rpc/qubes.SshAgent`.
 
-   ```shell_prompt
-   #!/bin/sh
-   # Qubes App Split SSH Script
+   - Open the file with e.g. `gedit`
+
+     ```shell_prompt
+     [user@fedora-32 ~]$ sudo gedit /etc/qubes-rpc/qubes.SshAgent
+     ```
      
-   # safeguard - Qubes notification bubble for each ssh request
-   notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
+   - Paste the following contents:
      
-   # SSH connection
-   socat - UNIX-CONNECT:$SSH_AUTH_SOCK
-   ```
+       ```shell_prompt
+      #!/bin/sh
+      # Qubes App Split SSH Script
+     
+      # safeguard - Qubes notification bubble for each ssh request
+      notify-send "[`qubesdb-read /name`] SSH agent access from: $QREXEC_REMOTE_DOMAIN"
+     
+      # SSH connection
+      socat - UNIX-CONNECT:$SSH_AUTH_SOCK
+      ```
 
 ### In the AppVM `ssh-client`
 
 Theoretically, you can use any AppVM but to increase security it is advised to create a dedicated AppVM for your SSH connections.
 Furthermore, you can set different firewall rules for each VM (i.e. for intranet and internet connections) which also provides additional protection.
 
-1. Edit `/rw/config/rc.local` and add the following to the bottom of the file:
+1. Edit `/rw/config/rc.local`.
 
-   ```shell_prompt
-   # SPLIT SSH CONFIGURATION >>>
-   # replace "vault" with your AppVM name which stores the ssh private key(s)
-   SSH_VAULT_VM="vault"
+   - Open the file with your editor of choice (e.g. `nano`).
 
-   if [ "$SSH_VAULT_VM" != "" ]; then
-     export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
-     rm -f "$SSH_SOCK"
-     sudo -u user /bin/sh -c "umask 177 && exec socat 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" 
-   fi
-   # <<< SPLIT SSH CONFIGURATION
-   ```
+     ```shell_prompt
+     [user@ssh-client ~]$ sudo nano /rw/config/rc.local
+     ```
+   - Add the following to the bottom of the file:
+
+      ```shell_prompt
+      # SPLIT SSH CONFIGURATION >>>
+      # replace "vault" with your AppVM name which stores the ssh private key(s)
+      SSH_VAULT_VM="vault"
+
+      if [ "$SSH_VAULT_VM" != "" ]; then
+        export SSH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
+        rm -f "$SSH_SOCK"
+        sudo -u user /bin/sh -c "umask 177 && exec socat 'UNIX-LISTEN:$SSH_SOCK,fork' 'EXEC:qrexec-client-vm $SSH_VAULT_VM qubes.SshAgent'" 
+      fi
+      # <<< SPLIT SSH CONFIGURATION
+      ```
 
 2. Edit `~/.bashrc` and add the following to the bottom of the file:
 
-   ```shell_prompt
-   # SPLIT SSH CONFIGURATION >>>
-   # replace "vault" with your AppVM name which stores the ssh private key(s)
-   SSH_VAULT_VM="vault"
+   - Open the file with your editor of choice (e.g. `nano`).
+
+     ```shell_prompt
+     [user@ssh-client ~]$ nano ~/.bashrc
+     ```
+
+   - Add the following to the bottom of the file:
+
+      ```shell_prompt
+      # SPLIT SSH CONFIGURATION >>>
+      # replace "vault" with your AppVM name which stores the ssh private key(s)
+      SSH_VAULT_VM="vault"
      
-   if [ "$SSH_VAULT_VM" != "" ]; then
-     export SSH_AUTH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
-   fi
-   # <<< SPLIT SSH CONFIGURATION
-   ```
+      if [ "$SSH_VAULT_VM" != "" ]; then
+        export SSH_AUTH_SOCK="/home/user/.SSH_AGENT_$SSH_VAULT_VM"
+      fi
+      # <<< SPLIT SSH CONFIGURATION
+      ```
 
 ## Securing Your Private Key
 
