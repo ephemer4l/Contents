@@ -10,7 +10,7 @@ This way the compromise of the domain you use to connect to your remote server d
 
 ## Overview
 
-1. Make sure the TemplateVM you plan to use is up to date and install `ssh-askpass`.
+1. Make sure the TemplateVM you plan to use is up to date.
 2. Create `vault` and `ssh-client` AppVMs.
 3. Create an ssh key in your `vault` AppVM and set up automatic key adding prompt.
 4. Set up VM interconnection
