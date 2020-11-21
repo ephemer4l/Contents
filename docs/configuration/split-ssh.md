@@ -206,8 +206,10 @@ Furthermore, you can set different firewall rules for each VM (i.e. for intranet
 
 ## Securing Your Private Key
 
-Too tired to write this now lol.
-Follow either one (but not both) of the configurations described below.
+Although passwords wouldn't protect you against a full system compromise, it's possible for an adversary to gain read-only access to some of your files (e.g. file shares or offline backups of data) and not be able to modify anything. 
+Passwords are advisable for mitigating these threats .
+You can either use the built-in password utility of your private key combined with a graphical prompt or prefer to use KeePassXC.
+Please note that since `ssh-askpass` prompt is displayed on `vault` VM boot, it is not possible to use both configurations simultaneously.
 
 ### Using the Built-in Password Utility and `ssh-askpass`
 
